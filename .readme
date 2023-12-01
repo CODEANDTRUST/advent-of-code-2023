@@ -1,0 +1,30 @@
+# Advent Of Code 2023 Answers
+
+## Posting Rules
+
+1. No rules
+2. Be respectful
+3. Include instructions for how to execute your answer
+
+You should make sure to follow the folder structure
+
+```
+root
+    1 - Trebuchet
+        part 1
+            blake.ts
+            preston.py
+            thomas
+                answer.c
+                headers.h
+        part 2
+            blake.ts
+            preston.py
+            thomas
+                answer.c
+                headers.h
+```
+
+Use whichever language you want. Use .gitignore files if you have packages and stuff.
+
+Have Fun!
