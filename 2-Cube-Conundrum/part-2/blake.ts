@@ -14,10 +14,6 @@ const t2 = performance.now()
 let sum: number = 0
 let gameId: number = 0;
 
-const maxRed = 12
-const maxGreen = 13
-const maxBlue = 14
-
 let recentNumber = 0
 
 let minRed = 0
