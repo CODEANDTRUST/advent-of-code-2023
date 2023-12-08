@@ -27,7 +27,7 @@ function parseNodeFromLine(line: string): Node {
     return { name, left: { name: left }, right: { name: right } }
 }
 
-let pointerNodes: Node[] = []
+let startNodes: Node[] = []
 
 // line 3 (index 2) is the first line of node data
 for (let i = 2; i < lines.length; i++) {
@@ -36,19 +36,11 @@ for (let i = 2; i < lines.length; i++) {
     const node = parseNodeFromLine(line)
 
     if (node.name.endsWith('A')) {
-        pointerNodes.push(node)
+        startNodes.push(node)
     }
 
-    if (node.name === "AAA") {
-        networkNodes.unshift(node)
-    } else {
-        networkNodes.push(node)
-    }
+    networkNodes.push(node)
 }
-
-let i = networkNodes.length - 1
-
-let startNodes: Node[] = []
 
 // returns true if nodes were attached
 function attachNodes(rootNode: Node, otherNode: Node): boolean {
@@ -75,7 +67,7 @@ function attachNodes(rootNode: Node, otherNode: Node): boolean {
     return attachments > 0
 }
 
-while (i >= 0) {
+while (networkNodes.length > 0) {
 
     let looseNode = networkNodes.pop() // end
 
@@ -85,77 +77,82 @@ while (i >= 0) {
             attachNodes(node, looseNode)
         }
     }
-    for (let node of pointerNodes) {
+    for (let node of startNodes) {
         if (looseNode !== undefined) {
             attachNodes(node, looseNode)
         }
     }
 
-    if (looseNode?.name.endsWith("A")) {
-        console.log(looseNode.name)
-        startNodes.push(looseNode)
-    }
-
-    i--
 }
 
 console.log({ startNodes })
 
-function countStepsToAllEnds(rootNode: Node) {
+// find if any of the start nodes share the same tree
+
+let foundNames: string[] = []
+
+function checkNode(node: Node) {
+    if (!foundNames.includes(node.name)) {
+        foundNames.push(node.name)
+        node.left && checkNode(node.left)
+        node.right && checkNode(node.right)
+    }
+}
+
+const MAX_STEPS = 10000000
+//
+function countStepsToEnds(root: Node): number[] {
+    let stepsToEnd: number[] = []
+
+    let currentNode = root
     let stepsTaken = 0
-    let stepsNeeded = 0
 
-    let pointer = rootNode
+    while (true) {
 
-    // I just hope 1000 times through is enough
-    for (let j = 0; j < 1000; j++) {
+        // follow the instructions (over and over)
         for (let i = 0; i < rls.length; i++) {
             let direction = rls[i]
+
             if (direction === 'L') {
-                pointer = pointer.left as Node
-                stepsTaken++
+                currentNode.left && (currentNode = currentNode.left)
             } else {
-                pointer = pointer.right as Node
-                stepsTaken++
+                currentNode.right && (currentNode = currentNode.right)
             }
-            if (pointer.name.endsWith('Z')) {
-                // console.log("End found after", stepsTaken, 'steps')
-                // if (stepsTaken === 2 * stepsNeeded) {
-                //      return stepsNeeded
-                // }
-                // stepsNeeded = stepsTaken
-                return stepsTaken
+            stepsTaken++
+
+            if (currentNode.name.endsWith('Z')) {
+                stepsToEnd.push(stepsTaken)
+                if (stepsTaken % stepsToEnd[0] > 0) {
+                    console.log({ irregular: stepsTaken })
+                }
             }
         }
-    }
-    console.log("ERROR, irregular pattern")
-    return stepsTaken
-}
 
-let stepsNeededArr: number[] = []
-nodeLoop: for (let root of pointerNodes) {
-    const stepsToEnd = countStepsToAllEnds(root)
-    // console.log(stepsToEnd)
-
-    for (let i = 0; i < stepsNeededArr.length; i++) {
-        let s = stepsNeededArr[i]
-
-        if ((stepsToEnd % s) === 0) {
-            stepsNeededArr[i] = stepsToEnd
-            continue nodeLoop
+        // if you finished walking through the instructions, find out if you end up at the start again
+        if (currentNode.name === root.name) {
+            break;
+        }
+        if (stepsTaken >= MAX_STEPS) {
+            break
         }
     }
-    stepsNeededArr.push(stepsToEnd)
+
+    return stepsToEnd
 }
 
-console.log({ stepsNeededArr })
+for (let root of startNodes) {
+    foundNames = []
+    checkNode(root) // find names in network
 
-let product: bigint = 1n;
-for (let n of stepsNeededArr) {
-    product *= BigInt(n)
+    const ns = countStepsToEnds(root)
+    console.log({ ns })
+    // console.log({
+    //     rootName: root.name,
+    //     names: foundNames.length,
+    //     namesWithA: foundNames.filter(name => name.endsWith('A')),
+    //     namesWithZ: foundNames.filter(name => name.endsWith('Z')),
+    // })
 }
-
-console.log({ answer: product })
 
 const t3 = performance.now()
 console.log("Input read time - ", t2 - t1, 'ms')
