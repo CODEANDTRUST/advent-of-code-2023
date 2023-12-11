@@ -198,24 +198,6 @@ function getDerivativeValues(yValues: number[]): number[] {
     return derivatives
 }
 
-// WHOOPS! in order to get this right, i would have to build a fancier data structure to store the C values! :)
-// given an array of numbers
-// return an array of numbers that is length 1 more than the input
-// where each value is the sum from output[i-1] and input[i] from the input values
-// and where output[0] = some seed value from input
-// input: [2, 5] seed: 1
-// output:  [1, 3, 8]
-function getIntegralValues(yValues: number[], seed: number): number[] {
-    // sum works because the values are rolling sums basically
-    let sum = seed
-    let integrals: number[] = [seed]
-    for (let i = 0; i < yValues.length; i++) {
-        sum += yValues[i]
-        integrals.push(sum)
-    }
-    return integrals
-}
-
 let sum = 0
 
 lineLoop: for (let i = 0; i < lines.length; i++) {
@@ -223,6 +205,8 @@ lineLoop: for (let i = 0; i < lines.length; i++) {
     let bestFitDegree = 0;
     let derivations = 0
     let cValues: number[] = [] // used to store first value when deriving in order to integrate later
+
+    // console.log({ originalYValues: yValues })
 
     degreeLoop: for (let degree = 1; degree < 20; degree++) {
         // y values indeces are the x values
@@ -271,28 +255,28 @@ lineLoop: for (let i = 0; i < lines.length; i++) {
         if (checkFunctionFit(yValues, coefficients)) {
             bestFitDegree = degree + derivations
             const f = createFOfX(coefficients)
-            const nextValue = f(yValues.length)
-            console.log({ nextValue })
-            yValues.push(Math.round(nextValue))
+            const newBeginningValue = f(-1)  // get the value on the left
+            // console.log({ cValues, newBeginningValue })
+            yValues.unshift(Math.round(newBeginningValue))
 
+            let n = Math.round(newBeginningValue)
             for (let d = 0; d < derivations; d++) {
                 // for every derivation we did,
                 // do an ingration
-                const seed: number = cValues.pop() || 0
-                yValues = getIntegralValues(yValues, seed)
+                const c = cValues.pop() || 0
+                n = c - n
             }
 
+            console.log('best fit', { bestFitDegree, degree, derivations, newBeginningValue, n })
 
-
-            // console.log('best fit', { bestFitDegree, degree, derivations, yValues })
-
-            const last = yValues[yValues.length - 1]
-            sum += last
+            sum += n
 
             continue lineLoop
         }
 
     }
+
+    console.log("did not find something")
 }
 
 console.log({ sum })

@@ -271,8 +271,8 @@ lineLoop: for (let i = 0; i < lines.length; i++) {
         if (checkFunctionFit(yValues, coefficients)) {
             bestFitDegree = degree + derivations
             const f = createFOfX(coefficients)
-            const nextValue = f(yValues.length)
-            console.log({ nextValue })
+            const nextValue = f(yValues.length) // this is not the 'next value' for the answer, just the next value for this derivative
+            // console.log({ nextValue }) 
             yValues.push(Math.round(nextValue))
 
             for (let d = 0; d < derivations; d++) {
