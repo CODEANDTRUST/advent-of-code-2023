@@ -1,5 +1,8 @@
 export { };
 
+// This whole thing is because I wanted to have fun and figure out what is the best fitting
+// higher degree polynomial. It was fun and I reviewed my linear algebra skills :)
+
 // Run with Deno! : Deno run --allow-read blake.ts
 
 const t1 = performance.now()
